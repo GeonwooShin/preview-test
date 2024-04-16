@@ -8,6 +8,10 @@ import AddModal from '@components/common/Modal/AddModal';
 import PrevMonthDays from '@components/Calendar/PrevMonthDays';
 import CurrentMonthDays from '@components/Calendar/CurrentMonthDays';
 import NextMonthDays from '@components/Calendar/NextMonthDays';
+import {
+  getDivideFormatDate,
+  removeHyphenFromDate,
+} from '@utils/getFormatDate';
 
 type CalendarDaysProps = {
   today: string;
@@ -30,12 +34,14 @@ const CalendarDays = memo(
     const tasksByDate = useAppSelector((state) => state.task.tasks);
 
     const handleAddTask = async (date: string) => {
-      const taskInfo = await openModal(<AddModal />).catch(() => false);
-      if (taskInfo) {
+      const task = await openModal<{ taskInfo: string; taskDate: string }>(
+        <AddModal initialDate={getDivideFormatDate(date)} />,
+      ).catch(() => {});
+      if (task) {
         const newTask: TaskProps = {
-          taskName: taskInfo as string,
+          taskName: task.taskInfo,
           isHoliday: 'N',
-          locdate: date,
+          locdate: removeHyphenFromDate(task.taskDate),
           taskId: Date.now().toString(),
         };
         dispatch(addTask(newTask));
