@@ -2,42 +2,64 @@ import { memo, useState } from 'react';
 import { ModalProps } from 'src/@types/modal';
 import styled from 'styled-components';
 
-const AddModal = memo(({ onSubmit, onAbort }: ModalProps) => {
-  const [taskInfo, setTaskInfo] = useState<string>('');
-  const handleOutside = (e: React.MouseEvent) => {
-    if (e.target !== e.currentTarget) return;
-    e.stopPropagation();
-    onAbort?.(new Error());
-  };
-  return (
-    <StyledWrapper onClick={handleOutside}>
-      <StyledContainer>
-        <StyledFlexContainer>
-          <StyledSpan>추가할 할일을 입력해주세요.</StyledSpan>
-          <StyledInput onChange={(e) => setTaskInfo(e.target.value)} />
-          <StyledButtonContainer>
-            <StyledButton
-              onClick={() => {
-                onAbort?.(new Error());
-              }}
-              $colorType="disabled"
-            >
-              취소
-            </StyledButton>
-            <StyledButton
-              onClick={() => {
-                onSubmit?.(taskInfo);
-              }}
-              $colorType="active"
-            >
-              추가하기
-            </StyledButton>
-          </StyledButtonContainer>
-        </StyledFlexContainer>
-      </StyledContainer>
-    </StyledWrapper>
-  );
-});
+type ModalPropsWithDate = ModalProps & {
+  initialDate: string;
+};
+
+const AddModal = memo(
+  ({ onSubmit, onAbort, initialDate }: ModalPropsWithDate) => {
+    const [taskInfo, setTaskInfo] = useState<string>('');
+    const [taskDate, setTaskDate] = useState<string>(initialDate);
+
+    const handleOutside = (e: React.MouseEvent) => {
+      if (e.target !== e.currentTarget) return;
+      e.stopPropagation();
+      onAbort?.(new Error());
+    };
+    return (
+      <StyledWrapper onClick={handleOutside}>
+        <StyledContainer>
+          <StyledFlexContainer>
+            <StyledSpan>추가할 할일을 입력해주세요.</StyledSpan>
+            <StyledInput
+              type="text"
+              placeholder="할 일을 추가해주세요."
+              value={taskInfo}
+              onChange={(e) => setTaskInfo(e.target.value)}
+              required
+            />
+            <StyledInput
+              type="date"
+              value={taskDate}
+              onChange={(e) => setTaskDate(e.target.value)}
+              required
+            />
+            <StyledButtonContainer>
+              <StyledButton
+                onClick={() => {
+                  onAbort?.(new Error());
+                }}
+                $colorType="disabled"
+              >
+                취소
+              </StyledButton>
+              <StyledButton
+                onClick={() => {
+                  if (taskInfo.length === 0) return;
+                  onSubmit?.({ taskInfo, taskDate });
+                }}
+                $colorType="active"
+                disabled={taskInfo.length === 0}
+              >
+                추가하기
+              </StyledButton>
+            </StyledButtonContainer>
+          </StyledFlexContainer>
+        </StyledContainer>
+      </StyledWrapper>
+    );
+  },
+);
 
 AddModal.displayName = 'AddModal';
 
